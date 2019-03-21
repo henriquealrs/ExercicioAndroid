@@ -3,19 +3,28 @@ package com.example.semana2aula1
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.programming_language_item.view.*
 
-class ProgrammingLanguageAdapter(val items: List<ProgrammingLanguage>) : RecyclerView.Adapter<ProgrammingLanguageAdapter.ViewHolder>() {
+class ProgrammingLanguageAdapter(val items: List<ProgrammingLanguage>,
+                                 val listener: (ProgrammingLanguage)->Unit)
+    : RecyclerView.Adapter<ProgrammingLanguageAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bindView(item: ProgrammingLanguage) = with(itemView) {
-//                ivMain.setImageResource(item.)
+        fun bindView(
+            item: ProgrammingLanguage,
+            listener: (ProgrammingLanguage) -> Unit
+        ) = with(itemView) {
+
             ivMain.setImageResource(item.imageResourceId)
             tvTitle.text = item.year.toString()
             tvTitle.text = item.name
+
+            itemView.setOnClickListener {
+                listener(item)
+            }
         }
     }
 
@@ -31,7 +40,7 @@ class ProgrammingLanguageAdapter(val items: List<ProgrammingLanguage>) : Recycle
 
     override fun onBindViewHolder(holder: ProgrammingLanguageAdapter.ViewHolder, position: Int) {
         val item = items[position]
-        holder.bindView(item)
+        holder.bindView(item, listener)
     }
 
 }
