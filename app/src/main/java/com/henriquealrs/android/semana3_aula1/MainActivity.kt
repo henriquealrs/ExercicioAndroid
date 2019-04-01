@@ -4,8 +4,11 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -14,7 +17,30 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() , LocationListener {
+    override fun onLocationChanged(location: Location?) {
+        location?.let {
+            val latLng = LatLng(it.latitude, it.longitude)
+
+            map.addMarker(MarkerOptions().position(latLng).title("New Position"))
+
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17F))
+        }
+    }
+
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+        Toast.makeText(this, "onStatusChanged $provider", Toast.LENGTH_LONG).show()
+    }
+
+    override fun onProviderEnabled(provider: String?) {
+
+        Toast.makeText(this, "onProviderEnabled $provider", Toast.LENGTH_LONG).show()
+    }
+
+    override fun onProviderDisabled(provider: String?) {
+
+        Toast.makeText(this, "onProviderDisabled $provider", Toast.LENGTH_LONG).show()
+    }
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -64,13 +90,31 @@ class MainActivity : AppCompatActivity() {
 
         val locationProvider = LocationManager.NETWORK_PROVIDER
 
-        val bestLocation = locationManager.getLastKnownLocation(locationProvider)
+        var bestLocation = locationManager.getLastKnownLocation(locationProvider)
 
-        val latLng = LatLng(bestLocation.latitude, bestLocation.longitude)
+        locationManager.allProviders.forEach {
+            val checkLocation: Location? = locationManager.getLastKnownLocation(it)
 
-        map.addMarker(MarkerOptions().position(latLng).title("GlobalCode"))
+            checkLocation?.let {
+                if(bestLocation == null || bestLocation!!.accuracy < it.accuracy) {
+                    bestLocation = it
+                }
+            }
+        }
 
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17F))
+        bestLocation?.let {
+            val latLng = LatLng(it.latitude, it.longitude)
+
+            map.addMarker(MarkerOptions().position(latLng).title("GlobalCode"))
+
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17F))
+        }
+
+        locationManager.requestLocationUpdates(
+            locationProvider,
+            2000L,
+            2F,
+            this)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
