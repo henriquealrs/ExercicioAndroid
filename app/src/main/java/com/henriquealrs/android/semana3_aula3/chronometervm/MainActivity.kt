@@ -1,9 +1,10 @@
-package com.henriquealrs.android.semana3_aula3
+package com.henriquealrs.android.semana3_aula3.chronometervm
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.lifecycle.ViewModelProviders
+import com.henriquealrs.android.semana3_aula3.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
