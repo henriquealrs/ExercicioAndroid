@@ -1,12 +1,22 @@
-package com.henriquealrs.android.semana3_aula4
+package com.henriquealrs.android.semana3_aula4.view
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.view.ActionMode
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu
 import android.view.MenuItem
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.henriquealrs.android.semana3_aula4.R
+import com.henriquealrs.android.semana3_aula4.entities.Word
+import com.henriquealrs.android.semana3_aula4.view.NewWordActivity.Companion.WORD_KEY
+import com.henriquealrs.android.semana3_aula4.viewmodel.WordViewModel
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import org.jetbrains.anko.startActivityForResult
 
 class MainActivity : AppCompatActivity() {
@@ -15,10 +25,36 @@ class MainActivity : AppCompatActivity() {
         private const val NEW_WORD_REQUEST_CODE = 1
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if(requestCode == NEW_WORD_REQUEST_CODE) {
+            if(resultCode == Activity.RESULT_OK)  {
+                data?.let {
+                    val word = Word(it.getStringExtra(WORD_KEY))
+                    wordViewModel.insert((word))
+                }
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private val wordViewModel by lazy {
+        ViewModelProviders.of(this).get(WordViewModel::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        val adapter = WordListAdapter()
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        wordViewModel.allWords.observe(this, Observer {
+            adapter.items = it
+        })
 
         fab.setOnClickListener { view ->
 //            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
